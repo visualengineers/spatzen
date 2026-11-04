@@ -1,2 +1,2 @@
 # spatzen
-WebXR test application using several web AR technologies for comparison
+Test applications using several web AR technologies for comparison
