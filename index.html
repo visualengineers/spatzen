@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>AR Experiments</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 40px 20px;
+            background: #f5f5f5;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            margin: 15px auto;
+            padding: 18px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+<h1>AR Experiments</h1>
+<p>Select an application:</p>
+
+<button onclick="location.href='A-Frame/index.html'">
+    Marker AR (A-Frame)
+</button>
+
+<button onclick="location.href='Three.js/index.html'">
+    Hand Tracking 3D (Three.js)
+</button>
+
+<button onclick="location.href='mediapipe-2d-canvas.js/index.html'">
+    Hand Tracking 2D (Canvas)
+</button>
+</body>
+</html>
