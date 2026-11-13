@@ -36,6 +36,8 @@
   const canvas = document.querySelector('#overlay');
   const ctx = canvas.getContext('2d');
   let cameraStream;
+  const diagram = new Image();
+  diagram.src = '../assets/placeholder-diagram.svg';
 
   // Match the display area to the camera's aspect ratio.
   function sizeView() {
@@ -60,7 +62,7 @@
   // Start camera access and hand tracking.
   async function start() {
     // Ask for camera permission before loading the tracking library.
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: {facingMode: 'environment'} });
     video.srcObject = cameraStream;
     await video.play();
 
@@ -99,15 +101,31 @@
 
       // Draw one label for each detected hand (up to two).
       detectedHands.forEach(hand => {
-        const indexTip = hand[8];
+        const palmCenter = hand[9];
 
         // Convert normalized coordinates to canvas pixels.
         // Mirror the x coordinate to match the mirrored video.
-        const x = (1 - indexTip.x) * canvas.width;
-        const y = indexTip.y * canvas.height;
+        const x = (1 - palmCenter.x) * canvas.width;
+        const y = palmCenter.y * canvas.height;
 
-        // Draw the label slightly above the fingertip.
-        ctx.fillText('Zeigefinger', x, y - 15);
+        // draw the diagram
+        if (diagram.complete && diagram.naturalWidth > 0) {
+
+          // Calculate diagram size relative to the visible palm width.
+          const palmWidth = Math.hypot(
+                  (hand[17].x - hand[5].x) * canvas.width,
+                  (hand[17].y - hand[5].y) * canvas.height,
+                  (hand[17].z - hand[5].z) * canvas.width
+          );
+
+          const width = palmWidth * 1.5;
+          const height = width / 1.6;
+
+          // Draw the diagram centered above the index fingertip.
+          ctx.drawImage(diagram, x - width / 2, y - height, width, height);
+
+        }
+
       });
     });
 

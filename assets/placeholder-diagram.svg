@@ -1,0 +1,19 @@
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="240" height="150"
+     viewBox="0 0 240 150">
+
+    <!-- White background with rounded corners -->
+    <rect x="1" y="1" width="238" height="148"
+          rx="12" fill="white" stroke="#333" stroke-width="2"/>
+
+    <!-- X and Y axes -->
+    <path d="M35 20 V120 H215"
+          fill="none" stroke="#333" stroke-width="2.5"/>
+
+    <!-- Three bars -->
+    <rect x="55" y="82" width="35" height="38" fill="#93c5fd"/>
+    <rect x="108" y="58" width="35" height="62" fill="#60a5fa"/>
+    <rect x="161" y="32" width="35" height="88" fill="#2563eb"/>
+
+</svg>

@@ -36,6 +36,8 @@
       const view = document.querySelector('#camera-view');
       const canvas = document.querySelector('#overlay');
       let cameraStream;
+      const diagram = new Image();
+      diagram.src = '../assets/placeholder-diagram.svg';
 
       // Match the display area to the camera's aspect ratio.
       function sizeView() {
@@ -60,7 +62,7 @@
       // Start camera access and hand tracking.
       async function start() {
         // Ask for camera permission before loading optional 3D and tracking libraries.
-        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true }); // asks for camera permission
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facing: 'environment'} }); // asks for camera permission
         video.srcObject = cameraStream;   // binds camera stream to video element
         await video.play();   // waits for the camera to start
 
@@ -102,26 +104,8 @@
         camera.position.z = 1000;
         renderer.setClearColor(0x000000, 0);
 
-        // Draw the paper and text once; the 3D plane moves with the hand.
-        const labelCanvas = document.createElement('canvas');
-        labelCanvas.width = 512;
-        labelCanvas.height = 160;
-        const labelContext = labelCanvas.getContext('2d');
-        labelContext.fillStyle = '#fffdf2';
-        labelContext.beginPath();
-        labelContext.roundRect(0, 0, labelCanvas.width, labelCanvas.height, 24);
-        labelContext.fill();
-        labelContext.strokeStyle = '#c7c4b8';
-        labelContext.lineWidth = 4;
-        labelContext.stroke();
-        labelContext.fillStyle = '#222';
-        labelContext.font = 'bold 64px sans-serif';
-        labelContext.textAlign = 'center';
-        labelContext.textBaseline = 'middle';
-        labelContext.fillText('Hello World', labelCanvas.width / 2, labelCanvas.height / 2);
-        
-        // Create a Three.js texture from the canvas and apply it to a plane.
-        const labelTexture = new THREE.CanvasTexture(labelCanvas);
+        // Load the SVG diagram as a texture for the 3D plane.
+        const labelTexture = new THREE.TextureLoader().load('../assets/placeholder-diagram.svg');
         labelTexture.colorSpace = THREE.SRGBColorSpace;
 
         // create sign as a plane mesh with the label texture, initially invisible
@@ -179,7 +163,7 @@
           // position, rotate and scale the sign plane based on the calculated axes and center point
           sign.position.copy(center).addScaledVector(normal, 2);
           sign.quaternion.setFromRotationMatrix(orientation);
-          sign.scale.set(palmWidth * 2.2, palmWidth * 0.64, 1);
+          sign.scale.set(palmWidth * 2.2, palmWidth * 1.375, 1);
           sign.visible = true;
           renderer.render(scene, camera);
         });
