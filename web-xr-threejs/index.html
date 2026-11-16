@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>WebXR AR</title>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- import three.js for visualizing content; addon to create button for WebXR-AR-session -->
+<script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+      }
+    }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { ARButton } from 'three/addons/webxr/ARButton.js';
+
+    // - initialize Three.js scene, camera and renderer -
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+        70,
+        window.innerWidth / window.innerHeight,
+        0.01,
+        20
+    );
+    // Create a transparent WebGL renderer.
+    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Enable WebXR and use a local reference space (relative to environment when application is started)
+    renderer.xr.enabled = true;
+    renderer.xr.setReferenceSpaceType('local');
+
+    document.body.appendChild(renderer.domElement); // renderer.domElement is html canvas element to draw 3d content
+
+    // Create the button for starting an immersive AR session.
+    document.body.appendChild(ARButton.createButton(renderer));
+
+    // Load the shared SVG diagram.
+    const texture = new THREE.TextureLoader().load('../assets/placeholder-diagram.svg');
+    texture.colorSpace = THREE.SRGBColorSpace;
+
+    // Create a plane with the same aspect ratio as the SVG.
+    // Dimensions are specified in meters.
+    const diagram = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.32, 0.20),
+        new THREE.MeshBasicMaterial({map: texture, transparent: true, side: THREE.DoubleSide})
+    );
+    diagram.visible = false;
+    scene.add(diagram);
+
+    let placed = false; // necessary to not draw diagram new for every new frame (position has to be static)
+
+    // Reset placement when a new AR session starts.
+    renderer.xr.addEventListener('sessionstart', () => {
+        placed = false;
+        diagram.visible = false;
+    });
+
+    // Reusable objects for position and orientation.
+    const position = new THREE.Vector3();
+    const orientation = new THREE.Quaternion();
+    const forward = new THREE.Vector3(0, 0, -1);
+
+    // Place the diagram using the tracked WebXR viewer pose.
+    function placeDiagram(frame) {
+        if (placed) return;
+
+        // call webXR coordinate system to calculate position of camera in virtual space
+        const referenceSpace =
+            renderer.xr.getReferenceSpace();
+        if (!referenceSpace) return;
+
+        // get camera position from WebXR
+        const pose = frame.getViewerPose(referenceSpace);
+        if (!pose) return;
+        const { position: p, orientation: q } = pose.transform;
+        position.set(p.x, p.y, p.z);
+        orientation.set(q.x, q.y, q.z, q.w);
+
+        // The camera looks along its local negative Z axis.
+        forward.set(0, 0, -1).applyQuaternion(orientation); // applyQuaternion rotates vector according to current orientation of phone
+
+        // Position the diagram 70 cm in front of the user.
+        diagram.position.copy(position).addScaledVector(forward, 0.7);
+
+        // Make the diagram face the camera while keeping it upright.
+        diagram.lookAt(position);
+        diagram.visible = true;
+        placed = true;
+    }
+
+    // Render the AR scene on each WebXR animation frame if XR-session is active, XR-frame is present and diagram was not placed yet
+    renderer.setAnimationLoop((time, frame) => {
+        if (renderer.xr.isPresenting && frame && !placed) {
+            placeDiagram(frame);
+        }
+
+        renderer.render(scene, camera);
+    });
+</script>
+</body>
+</html>
