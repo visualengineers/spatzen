@@ -19,8 +19,8 @@
         position: relative;
       }
 
-      /* Mirror the camera only; keep overlay text readable. */
-      video {
+      /* Mirror the canvas only; keep overlay text readable. */
+      canvas {
         transform: scaleX(-1);
       }
     </style>
@@ -62,7 +62,7 @@
       // Start camera access and hand tracking.
       async function start() {
         // Ask for camera permission before loading optional 3D and tracking libraries.
-        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facing: 'environment'} }); // asks for camera permission
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment'} }); // asks for camera permission
         video.srcObject = cameraStream;   // binds camera stream to video element
         await video.play();   // waits for the camera to start
 
